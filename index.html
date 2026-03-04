@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ОИиКТ АТС — Digital Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#0f172a;
+  --bg-secondary:#1e293b;
+  --text:#ffffff;
+  --grad1:#4e54c8;
+  --grad2:#8f94fb;
+  --accent:#4e54c8;
+  --accent2:#8f94fb;
+  --glass:rgba(255,255,255,0.08);
+}
+
+.light{
+  --bg:#f5f7fa;
+  --bg-secondary:#ffffff;
+  --text:#111111;
+  --glass:rgba(0,0,0,0.05);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);transition:0.4s;overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;width:100%;backdrop-filter:blur(15px);background:rgba(0,0,0,0.4);display:flex;justify-content:space-between;align-items:center;padding:15px 40px;z-index:1000;}
+nav h2{font-weight:800;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+nav ul{display:flex;gap:20px;list-style:none;}
+nav a{text-decoration:none;color:var(--text);font-weight:500;transition:0.3s;}
+nav a:hover{color:var(--accent2);}
+.theme-toggle{cursor:pointer;padding:8px 14px;border-radius:20px;background:var(--glass);}
+
+/* HERO */
+.hero{height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;background:url('https://picsum.photos/1920/1080?blur=6') no-repeat center/cover;}
+.hero h1{font-size:3rem;font-weight:800;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{margin-top:20px;max-width:600px;opacity:0.9;background:rgba(0,0,0,0.3);padding:10px 15px;border-radius:10px;}
+
+/* SECTIONS */
+section{padding:80px 40px;}
+.section-title{text-align:center;margin-bottom:40px;font-size:2rem;font-weight:700;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px;}
+.card{background:var(--glass);backdrop-filter:blur(20px);padding:30px;border-radius:20px;transition:0.4s;border:2px solid rgba(255,255,255,0.1);}
+.card:hover{transform:translateY(-10px);box-shadow:0 20px 40px rgba(0,0,0,0.4);border:2px solid var(--accent2);}
+
+/* STATS */
+.stats{display:flex;justify-content:center;gap:60px;flex-wrap:wrap;margin-bottom:40px;}
+.stat{text-align:center;}
+.stat h3{font-size:2.5rem;background:linear-gradient(90deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* PROGRESS */
+.progress{margin-bottom:20px;}
+.progress-bar{height:10px;border-radius:10px;background:var(--glass);overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--grad1),var(--grad2));width:0;transition:2s;}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;background:var(--glass);border-radius:15px;overflow:hidden;}
+th,td{padding:12px;text-align:left;}
+tr:nth-child(even){background:rgba(255,255,255,0.05);}
+
+/* GALLERY */
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;}
+.gallery img{width:100%;border-radius:15px;cursor:pointer;transition:0.4s;}
+.gallery img:hover{transform:scale(1.05);}
+
+/* MODAL IMAGE */
+.image-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none;transition:0.3s;}
+.image-modal img{max-width:80%;border-radius:15px;}
+.image-modal.active{opacity:1;pointer-events:auto;}
+
+/* FORM */
+form{max-width:500px;margin:auto;display:flex;flex-direction:column;gap:15px;}
+input,textarea{padding:12px;border:none;border-radius:10px;background:var(--glass);color:var(--text);}
+button{padding:12px;border:none;border-radius:20px;background:linear-gradient(90deg,var(--grad1),var(--grad2));cursor:pointer;font-weight:600;}
+
+/* SQL */
+.sql-calculator{max-width:600px;margin:auto;background:var(--glass);padding:20px;border-radius:15px;}
+.sql-calculator input, .sql-calculator button{margin-top:10px;width:100%;}
+.sql-result{margin-top:15px;padding:10px;background:rgba(0,0,0,0.2);border-radius:10px;}
+
+/* INCIDENTS */
+.incident-filter{margin-bottom:15px;text-align:center;}
+.incident-filter button{margin:0 5px;padding:8px 12px;border:none;border-radius:15px;background:var(--glass);cursor:pointer;}
+.incident-filter button.active{background:var(--accent2);}
+</style>
+</head>
+<body>
+
+<nav>
+  <h2>ОИиКТ</h2>
+  <ul>
+    <li><a href="#about">О нас</a></li>
+    <li><a href="#tech">Технологии</a></li>
+    <li><a href="#skills">Компетенции</a></li>
+    <li><a href="#sql">SQL</a></li>
+    <li><a href="#incidents">Инциденты</a></li>
+    <li><a href="#contact">Контакты</a></li>
+  </ul>
+  <div class="theme-toggle" onclick="toggleTheme()">🌗 Тема</div>
+</nav>
+
+<div class="hero">
+  <h1>Digital Infrastructure Dashboard</h1>
+  <p>Интерактивный дашборд IT-подразделения с KPI и аналитикой.</p>
+</div>
+
+<section id="about">
+  <div class="section-title">О подразделении</div>
+  <div class="cards">
+    <div class="card"><h3>Инфраструктура</h3><p>Поддержка сетей, серверов и резервных систем.</p></div>
+    <div class="card"><h3>Разработка</h3><p>Автоматизация и внутренняя аналитика.</p></div>
+    <div class="card"><h3>Безопасность</h3><p>Аудит доступа и защита данных.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-title">Статистика</div>
+  <div class="stats">
+    <div class="stat"><h3 id="servers">0</h3><p>Серверов</p></div>
+    <div class="stat"><h3 id="users">0</h3><p>Пользователей</p></div>
+    <div class="stat"><h3 id="projects">0</h3><p>Проектов</p></div>
+  </div>
+  <canvas id="kpiChart" style="max-width:800px;margin:auto;"></canvas>
+</section>
+
+<section id="skills">
+  <div class="section-title">Компетенции</div>
+  <div class="progress"><p>Сетевые технологии</p><div class="progress-bar"><div class="progress-fill" data-width="90%"></div></div></div>
+  <div class="progress"><p>Виртуализация</p><div class="progress-bar"><div class="progress-fill" data-width="85%"></div></div></div>
+  <div class="progress"><p>Разработка ПО</p><div class="progress-bar"><div class="progress-fill" data-width="80%"></div></div></div>
+</section>
+
+<section id="tech">
+  <div class="section-title">Используемые технологии</div>
+  <table>
+    <tr><th>Категория</th><th>Технологии</th></tr>
+    <tr><td>Серверы</td><td>Linux, Windows Server</td></tr>
+    <tr><td>Виртуализация</td><td>VMware, Hyper-V</td></tr>
+    <tr><td>Базы данных</td><td>PostgreSQL, MySQL</td></tr>
+  </table>
+</section>
+
+<section id="sql">
+  <div class="section-title">SQL Калькулятор</div>
+  <div class="sql-calculator">
+    <input type="text" id="sqlQuery" placeholder="Напишите SQL, например SELECT 1+1;">
+    <button onclick="runSQL()">Выполнить</button>
+    <div class="sql-result" id="sqlResult">Результат появится здесь</div>
+  </div>
+</section>
+
+<section id="incidents">
+  <div class="section-title">Инциденты</div>
+  <div class="incident-filter">
+    <button onclick="filterIncidents('all')" class="active">Все</button>
+    <button onclick="filterIncidents('open')">В работе</button>
+    <button onclick="filterIncidents('resolved')">Решён</button>
+  </div>
+  <table id="incidentsTable">
+    <tr><th>ID</th><th>Описание</th><th>Статус</th><th>Дата</th></tr>
+    <tr data-status="resolved"><td>101</td><td>Сбой сети</td><td>Решён</td><td>01.03.2026</td></tr>
+    <tr data-status="open"><td>102</td><td>Ошибка бэкапа</td><td>В работе</td><td>02.03.2026</td></tr>
+    <tr data-status="resolved"><td>103</td><td>Нарушение безопасности</td><td>Решён</td><td>03.03.2026</td></tr>
+  </table>
+</section>
+
+<section>
+  <div class="section-title">Инциденты — График за неделю</div>
+  <canvas id="lineChart" style="max-width:1000px;margin:auto;height:400px;"></canvas>
+</section>
+
+<section id="contact">
+  <div class="section-title">Связаться с нами</div>
+  <form onsubmit="return validateForm()">
+    <input type="text" id="name" placeholder="Имя">
+    <input type="email" id="email" placeholder="Email">
+    <textarea rows="4" id="message" placeholder="Сообщение"></textarea>
+    <button>Отправить</button>
+  </form>
+</section>
+
+<footer>© 2026 ОИиКТ АТС. ОАО Дагдизель</footer>
+<div class="image-modal" id="imageModal" onclick="closeImage()"><img id="modalImg"></div>
+
+<script>
+function toggleTheme(){document.body.classList.toggle("light");localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");}
+if(localStorage.getItem("theme")==="light"){document.body.classList.add("light");}
+
+function animateCounter(id,target){let el=document.getElementById(id);let count=0;let interval=setInterval(()=>{count+=Math.ceil(target/50);if(count>=target){count=target;clearInterval(interval);}el.innerText=count;},40);}
+animateCounter("servers",120);animateCounter("users",850);animateCounter("projects",45);
+
+document.querySelectorAll(".progress-fill").forEach(el=>{setTimeout(()=>{el.style.width=el.dataset.width;},500);});
+
+function openImage(src){document.getElementById("modalImg").src=src;document.getElementById("imageModal").classList.add("active");}
+function closeImage(){document.getElementById("imageModal").classList.remove("active");}
+
+function validateForm(){let n=document.getElementById("name").value.trim(),e=document.getElementById("email").value.trim(),m=document.getElementById("message").value.trim();if(n.length<2){alert("Имя слишком короткое");return!1}if(!e.includes("@")){alert("Введите корректный email");return!1}if(m.length<5){alert("Сообщение слишком короткое");return!1}alert("Сообщение отправлено 🚀");return!1}
+
+function runSQL(){let q=document.getElementById("sqlQuery").value.trim().toUpperCase(),r="Ошибка SQL";try{if(q==="SELECT 1+1")r="Результат: 2";else if(q==="SELECT 2*3")r="Результат: 6";else r="Невозможный запрос";}catch(e){r="Ошибка";}document.getElementById("sqlResult").innerText=r;}
+
+function filterIncidents(s){document.querySelectorAll('.incident-filter button').forEach(b=>b.classList.remove('active'));if(s==='all')document.querySelector('.incident-filter button:first-child').classList.add('active');else if(s==='open')document.querySelector('.incident-filter button:nth-child(2)').classList.add('active');else document.querySelector('.incident-filter button:nth-child(3)').classList.add('active');document.querySelectorAll('#incidentsTable tr[data-status]').forEach(tr=>{tr.style.display=(s==='all'||tr.dataset.status===s)?'table-row':'none';});}
+
+// KPI Chart
+new Chart(document.getElementById('kpiChart'),{type:'bar',data:{labels:['Серверы','Пользователи','Проекты'],datasets:[{data:[120,850,45],backgroundColor:['rgba(78,84,200,0.7)','rgba(143,148,251,0.7)','rgba(78,84,200,0.7)'],borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+// LINE Chart (биржевой)
+new Chart(document.getElementById('lineChart'),{type:'line',data:{labels:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],datasets:[{label:'Инциденты',data:[12,9,14,7,11,8,10],borderColor:'rgba(143,148,251,0.9)',backgroundColor:'rgba(143,148,251,0.3)',fill:true,tension:0.4,pointRadius:4}]} ,options:{plugins:{legend:{display:true}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});
+</script>
+
+</body>
+</html>
